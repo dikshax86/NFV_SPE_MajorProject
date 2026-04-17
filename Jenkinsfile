@@ -20,17 +20,23 @@ pipeline {
             steps {
                 sh '''
                     cd firewall-service
-                    pip install -r requirements.txt
+                    python3 -m venv venv
+. venv/bin/activate
+pip install -r requirements.txt
                     python -m pytest tests/ -v
                 '''
                 sh '''
                     cd switch-service
-                    pip install -r requirements.txt
+                    python3 -m venv venv
+. venv/bin/activate
+pip install -r requirements.txt
                     python -m pytest tests/ -v
                 '''
                 sh '''
                     cd monitor-service
-                    pip install -r requirements.txt
+                    python3 -m venv venv
+. venv/bin/activate
+pip install -r requirements.txt
                     python -m pytest tests/ -v
                 '''
             }
