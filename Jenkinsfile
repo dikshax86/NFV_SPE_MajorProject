@@ -71,11 +71,12 @@ pipeline {
             }
         }
 
-        stage('Deploy to Kubernetes') {
+        stage('Deploy using Ansible') {
             steps {
-                sh 'kubectl apply -f k8s/firewall-deployment.yaml'
-                sh 'kubectl apply -f k8s/switch-deployment.yaml'
-                sh 'kubectl apply -f k8s/monitor-deployment.yaml'
+                ansiblePlaybook(
+                    playbook: "ansible/playbooks/deploy-compose.yml",
+                    inventory: "ansible/inventory/hosts"
+                )
             }
         }
     }

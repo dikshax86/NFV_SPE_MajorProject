@@ -1,0 +1,71 @@
+---
+- name: Deploy NFV services to Kubernetes via Ansible
+  hosts: localhost
+  connection: local
+
+  tasks:
+    # ---- Ensure Minikube is running ----
+    - name: Check if Minikube is running
+      command: minikube status --format '{{.Host}}'
+      register: minikube_status
+      ignore_errors: yes
+
+    - name: Start Minikube if not running
+      command: minikube start --driver=docker
+      when: minikube_status.rc != 0 or minikube_status.stdout != "Running"
+
+    # ---- Deploy to Kubernetes ----
+    - name: Deploy Firewall service to K8s
+      command: kubectl apply -f k8s/firewall-deployment.yaml
+      args:
+        chdir: "{{ playbook_dir }}/../../"
+      register: fw_deploy
+
+    - name: Deploy Switch service to K8s
+      command: kubectl apply -f k8s/switch-deployment.yaml
+      args:
+        chdir: "{{ playbook_dir }}/../../"
+      register: sw_deploy
+
+    - name: Deploy Monitor service to K8s
+      command: kubectl apply -f k8s/monitor-deployment.yaml
+      args:
+        chdir: "{{ playbook_dir }}/../../"
+      register: mn_deploy
+
+    - name: Display deployment results
+      debug:
+        msg:
+          - "{{ fw_deploy.stdout }}"
+          - "{{ sw_deploy.stdout }}"
+          - "{{ mn_deploy.stdout }}"
+
+    # ---- Wait for pods to be ready ----
+    - name: Wait for Firewall pods to be ready
+      command: kubectl wait --for=condition=ready pod -l app=firewall-service --timeout=120s
+      register: fw_ready
+
+    - name: Wait for Switch pods to be ready
+      command: kubectl wait --for=condition=ready pod -l app=switch-service --timeout=120s
+      register: sw_ready
+
+    - name: Wait for Monitor pods to be ready
+      command: kubectl wait --for=condition=ready pod -l app=monitor-service --timeout=120s
+      register: mn_ready
+
+    # ---- Verify ----
+    - name: Get all running pods
+      command: kubectl get pods -o wide
+      register: pod_status
+
+    - name: Get all services
+      command: kubectl get services
+      register: svc_status
+
+    - name: Display pod status
+      debug:
+        msg: "{{ pod_status.stdout_lines }}"
+
+    - name: Display service status
+      debug:
+        msg: "{{ svc_status.stdout_lines }}"
