@@ -24,6 +24,11 @@ spec:
         image: dknights/monitor-service:latest
         ports:
         - containerPort: 5002
+        env:
+        - name: LOGSTASH_HOST
+          value: "host.minikube.internal"
+        - name: LOGSTASH_PORT
+          value: "5050"
         resources:
           requests:
             memory: "64Mi"

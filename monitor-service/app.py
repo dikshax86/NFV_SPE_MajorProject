@@ -11,9 +11,10 @@ logging.basicConfig(level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger('monitor-service')
 
-# Logstash configuration
-LOGSTASH_HOST = 'logstash'
-LOGSTASH_PORT = 5000
+# Logstash configuration - uses env var so it works in both Docker Compose and K8s
+import os
+LOGSTASH_HOST = os.environ.get('LOGSTASH_HOST', 'host.minikube.internal')
+LOGSTASH_PORT = int(os.environ.get('LOGSTASH_PORT', '5050'))
 
 
 def send_to_logstash(log_data):
