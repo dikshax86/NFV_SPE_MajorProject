@@ -7,7 +7,7 @@ pipeline {
 
     environment {
         DOCKER_HUB_USER = 'dknights'
-        GITHUB_REPO_URL = 'https://github.com/dikshax86/nfv-devops-project.git'
+        GITHUB_REPO_URL = 'https://github.com/dikshax86/NFV_SPE_MajorProject.git'
     }
 
     stages {
