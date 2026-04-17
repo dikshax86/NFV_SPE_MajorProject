@@ -1,0 +1,106 @@
+version: '3.8'
+
+services:
+
+  # ==================== APPLICATION SERVICES ====================
+
+  firewall-service:
+    build: ./firewall-service
+    image: ${DOCKER_HUB_USER:-diksha}/firewall-service:latest
+    container_name: firewall-service
+    ports:
+      - "5000:5000"
+    networks:
+      - nfv-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  switch-service:
+    build: ./switch-service
+    image: ${DOCKER_HUB_USER:-diksha}/switch-service:latest
+    container_name: switch-service
+    ports:
+      - "5001:5001"
+    depends_on:
+      - firewall-service
+      - monitor-service
+    networks:
+      - nfv-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  monitor-service:
+    build: ./monitor-service
+    image: ${DOCKER_HUB_USER:-diksha}/monitor-service:latest
+    container_name: monitor-service
+    ports:
+      - "5002:5002"
+    depends_on:
+      - logstash
+    networks:
+      - nfv-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ==================== ELK STACK ====================
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.0
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+    volumes:
+      - es-data:/usr/share/elasticsearch/data
+    networks:
+      - nfv-network
+    restart: unless-stopped
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:7.17.0
+    container_name: logstash
+    volumes:
+      - ./logstash/pipeline:/usr/share/logstash/pipeline
+    ports:
+      - "5044:5044"
+      - "5050:5000"
+    depends_on:
+      - elasticsearch
+    networks:
+      - nfv-network
+    restart: unless-stopped
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.17.0
+    container_name: kibana
+    ports:
+      - "5601:5601"
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    depends_on:
+      - elasticsearch
+    networks:
+      - nfv-network
+    restart: unless-stopped
+
+networks:
+  nfv-network:
+    driver: bridge
+
+volumes:
+  es-data:
+    driver: local

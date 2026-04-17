@@ -1,0 +1,21 @@
+---
+# Kubernetes installation role
+- name: Install kubectl via snap
+  snap:
+    name: kubectl
+    classic: yes
+
+- name: Download Minikube binary
+  get_url:
+    url: https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+    dest: /usr/local/bin/minikube
+    mode: '0755'
+
+- name: Verify kubectl installation
+  command: kubectl version --client
+  register: kubectl_version
+  changed_when: false
+
+- name: Display kubectl version
+  debug:
+    msg: "{{ kubectl_version.stdout }}"

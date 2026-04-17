@@ -1,0 +1,16 @@
+---
+# Main playbook - orchestrates all roles
+- name: Setup infrastructure and deploy NFV services
+  hosts: all
+  become: yes
+
+  roles:
+    - docker
+    - kubernetes
+
+- name: Deploy NFV application to Kubernetes
+  hosts: k8s-master
+  become: yes
+
+  roles:
+    - deploy

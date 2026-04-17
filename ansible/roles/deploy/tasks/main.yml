@@ -1,0 +1,42 @@
+---
+# Application deployment role
+- name: Create project directory on target
+  file:
+    path: /opt/nfv-devops-project/k8s
+    state: directory
+    mode: '0755'
+
+- name: Copy Kubernetes manifests to target
+  copy:
+    src: "{{ item }}"
+    dest: /opt/nfv-devops-project/k8s/
+  loop:
+    - ../../../../k8s/firewall-deployment.yaml
+    - ../../../../k8s/switch-deployment.yaml
+    - ../../../../k8s/monitor-deployment.yaml
+
+- name: Apply Firewall deployment
+  command: kubectl apply -f /opt/nfv-devops-project/k8s/firewall-deployment.yaml
+  register: fw_deploy
+
+- name: Apply Switch deployment
+  command: kubectl apply -f /opt/nfv-devops-project/k8s/switch-deployment.yaml
+  register: sw_deploy
+
+- name: Apply Monitor deployment
+  command: kubectl apply -f /opt/nfv-devops-project/k8s/monitor-deployment.yaml
+  register: mn_deploy
+
+- name: Display deployment status
+  debug:
+    msg:
+      - "Firewall: {{ fw_deploy.stdout }}"
+      - "Switch: {{ sw_deploy.stdout }}"
+      - "Monitor: {{ mn_deploy.stdout }}"
+
+- name: Wait for all pods to be ready
+  command: kubectl wait --for=condition=ready pod -l app={{ item }} --timeout=120s
+  loop:
+    - firewall-service
+    - switch-service
+    - monitor-service

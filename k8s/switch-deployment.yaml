@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: switch-service
+  labels:
+    app: switch-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: switch-service
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: switch-service
+    spec:
+      containers:
+      - name: switch-service
+        image: diksha/switch-service:latest
+        ports:
+        - containerPort: 5001
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "100m"
+          limits:
+            memory: "128Mi"
+            cpu: "250m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 5001
+          initialDelaySeconds: 10
+          periodSeconds: 15
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 5001
+          initialDelaySeconds: 5
+          periodSeconds: 10
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: switch-service
+spec:
+  selector:
+    app: switch-service
+  type: NodePort
+  ports:
+  - port: 5001
+    targetPort: 5001
+    nodePort: 30001
+    protocol: TCP
