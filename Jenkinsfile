@@ -1,18 +1,20 @@
 pipeline {
     agent any
 
+    triggers {
+        githubPush()
+    }
+
     environment {
         DOCKER_HUB_USER = 'dknights'
-        DOCKER_IMAGE_FW = "${DOCKER_HUB_USER}/firewall-service"
-        DOCKER_IMAGE_SW = "${DOCKER_HUB_USER}/switch-service"
-        DOCKER_IMAGE_MN = "${DOCKER_HUB_USER}/monitor-service"
+        GITHUB_REPO_URL = 'https://github.com/dikshax86/nfv-devops-project.git'
     }
 
     stages {
 
         stage('Clone Repository') {
             steps {
-                checkout scm
+                git url: "${GITHUB_REPO_URL}", branch: "main"
             }
         }
 
@@ -21,22 +23,22 @@ pipeline {
                 sh '''
                     cd firewall-service
                     python3 -m venv venv
-. venv/bin/activate
-pip install -r requirements.txt
+                    . venv/bin/activate
+                    pip install -r requirements.txt
                     python -m pytest tests/ -v
                 '''
                 sh '''
                     cd switch-service
                     python3 -m venv venv
-. venv/bin/activate
-pip install -r requirements.txt
+                    . venv/bin/activate
+                    pip install -r requirements.txt
                     python -m pytest tests/ -v
                 '''
                 sh '''
                     cd monitor-service
                     python3 -m venv venv
-. venv/bin/activate
-pip install -r requirements.txt
+                    . venv/bin/activate
+                    pip install -r requirements.txt
                     python -m pytest tests/ -v
                 '''
             }
@@ -44,23 +46,27 @@ pip install -r requirements.txt
 
         stage('Build Docker Images') {
             steps {
-                sh "docker build -t ${DOCKER_IMAGE_FW}:latest ./firewall-service"
-                sh "docker build -t ${DOCKER_IMAGE_SW}:latest ./switch-service"
-                sh "docker build -t ${DOCKER_IMAGE_MN}:latest ./monitor-service"
+                script {
+                    docker.build("${DOCKER_HUB_USER}/firewall-service", "./firewall-service")
+                    docker.build("${DOCKER_HUB_USER}/switch-service", "./switch-service")
+                    docker.build("${DOCKER_HUB_USER}/monitor-service", "./monitor-service")
+                }
             }
         }
 
         stage('Push to Docker Hub') {
             steps {
-                withCredentials([usernamePassword(
-                    credentialsId: 'docker-hub-creds',
-                    usernameVariable: 'DOCKER_USER',
-                    passwordVariable: 'DOCKER_PASS'
-                )]) {
-                    sh "echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin"
-                    sh "docker push ${DOCKER_IMAGE_FW}:latest"
-                    sh "docker push ${DOCKER_IMAGE_SW}:latest"
-                    sh "docker push ${DOCKER_IMAGE_MN}:latest"
+                script {
+                    docker.withRegistry('', 'DockerHubCred') {
+                        sh "docker tag ${DOCKER_HUB_USER}/firewall-service ${DOCKER_HUB_USER}/firewall-service:latest"
+                        sh "docker push ${DOCKER_HUB_USER}/firewall-service:latest"
+
+                        sh "docker tag ${DOCKER_HUB_USER}/switch-service ${DOCKER_HUB_USER}/switch-service:latest"
+                        sh "docker push ${DOCKER_HUB_USER}/switch-service:latest"
+
+                        sh "docker tag ${DOCKER_HUB_USER}/monitor-service ${DOCKER_HUB_USER}/monitor-service:latest"
+                        sh "docker push ${DOCKER_HUB_USER}/monitor-service:latest"
+                    }
                 }
             }
         }
