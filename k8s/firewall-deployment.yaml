@@ -21,7 +21,7 @@ spec:
     spec:
       containers:
       - name: firewall-service
-        image: diksha/firewall-service:latest
+        image: dknights/firewall-service:latest
         ports:
         - containerPort: 5000
         resources:

@@ -21,7 +21,7 @@ spec:
     spec:
       containers:
       - name: monitor-service
-        image: diksha/monitor-service:latest
+        image: dknights/monitor-service:latest
         ports:
         - containerPort: 5002
         resources:

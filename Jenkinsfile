@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_HUB_USER = 'diksha'
+        DOCKER_HUB_USER = 'dknights'
         DOCKER_IMAGE_FW = "${DOCKER_HUB_USER}/firewall-service"
         DOCKER_IMAGE_SW = "${DOCKER_HUB_USER}/switch-service"
         DOCKER_IMAGE_MN = "${DOCKER_HUB_USER}/monitor-service"
