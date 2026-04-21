@@ -21,7 +21,7 @@ services:
 
   switch-service:
     build: ./switch-service
-    image: ${DOCKER_HUB_USER:-diksha}/switch-service:latest
+    image: ${DOCKER_HUB_USER:-dknights}/switch-service:latest
     container_name: switch-service
     ports:
       - "5001:5001"
@@ -39,7 +39,7 @@ services:
 
   monitor-service:
     build: ./monitor-service
-    image: ${DOCKER_HUB_USER:-diksha}/monitor-service:latest
+    image: ${DOCKER_HUB_USER:-dknights}/monitor-service:latest
     container_name: monitor-service
     ports:
       - "5002:5002"
