@@ -10,15 +10,15 @@
       register: minikube_status
       ignore_errors: yes
 
-    - name: Delete stale Minikube cluster
-      command: minikube delete --purge
-      when: minikube_status.rc != 0 or minikube_status.stdout != "Running"
-      ignore_errors: yes
+    # - name: Delete stale Minikube cluster
+    #   command: minikube delete --purge
+    #   when: minikube_status.rc != 0 or minikube_status.stdout != "Running"
+    #   ignore_errors: yes
 
-    - name: Start Minikube fresh
-      command: minikube start --driver=docker --force --delete-on-failure
-      timeout: 300
-      when: minikube_status.rc != 0 or minikube_status.stdout != "Running"
+    # - name: Start Minikube fresh
+    #   command: minikube start --driver=docker --force --delete-on-failure
+    #   timeout: 300
+    #   when: minikube_status.rc != 0 or minikube_status.stdout != "Running"
 
     # ---- Deploy to Kubernetes ----
     - name: Deploy Firewall service to K8s
