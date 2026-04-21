@@ -6,7 +6,7 @@ services:
 
   firewall-service:
     build: ./firewall-service
-    image: ${DOCKER_HUB_USER:-diksha}/firewall-service:latest
+    image: ${DOCKER_HUB_USER:-dknights}/firewall-service:latest
     container_name: firewall-service
     ports:
       - "5000:5000"
