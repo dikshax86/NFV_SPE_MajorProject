@@ -20,6 +20,9 @@
     #   timeout: 300
     #   when: minikube_status.rc != 0 or minikube_status.stdout != "Running"
 
+    - name: Refresh kubeconfig certificates
+      command: minikube update-context
+
     # ---- Deploy to Kubernetes ----
     - name: Deploy Firewall service to K8s
       command: kubectl apply -f k8s/firewall-deployment.yaml
