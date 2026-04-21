@@ -6,7 +6,7 @@
   tasks:
     # ---- Ensure Minikube is running ----
     - name: Check if Minikube is running
-      command: minikube status --format '{{ "{{" }}.Host{{ "}}" }}'
+      shell: minikube status | grep -i "host" | awk '{print $2}'
       register: minikube_status
       ignore_errors: yes
 
